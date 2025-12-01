@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Vastbitloud - Login / Cadastro</title>
+
+<style>
+body{
+  margin:0;
+  padding:0;
+  min-height:100vh;
+  font-family:Arial;
+  color:#fff;
+
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+
+  background:url('bg-login.png') no-repeat center center;
+  background-size:cover;
+}
+
+.card{
+  background:rgba(0,0,0,0.55);
+  padding:28px;
+  width:100%;
+  max-width:380px;
+  border-radius:12px;
+  box-shadow:0 8px 30px rgba(0,0,0,.45);
+  backdrop-filter:blur(6px);
+  margin:20px;
+}
+
+h2{
+  margin-top:0;
+  text-align:center;
+}
+
+input{
+  width:100%;
+  padding:12px;
+  margin:10px 0;
+  border-radius:6px;
+  border:none;
+  background:#1a2333;
+  color:#fff;
+}
+
+button{
+  width:100%;
+  padding:12px;
+  border-radius:6px;
+  border:none;
+  background:#4da3ff;
+  color:#000;
+  font-weight:700;
+  cursor:pointer;
+  margin-top:8px;
+}
+
+a{
+  color:#66aaff;
+  display:block;
+  margin-top:12px;
+  text-align:center;
+  cursor:pointer;
+}
+
+.hidden{ display:none; }
+
+select{
+  width:100%;
+  padding:10px;
+  margin-top:8px;
+  border-radius:6px;
+  border:none;
+  background:#1a2333;
+  color:#fff;
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginBox" class="card">
+  <h2>Entrar</h2>
+  <input id="phoneLogin" type="tel" placeholder="Telefone">
+  <input id="passLogin" type="password" placeholder="Senha">
+  
+  <select id="destinationSelect">
+    <option value="equipe">Minha Equipe</option>
+    <!-- texto e value atualizados corretamente -->
+    <option value="pagina_inicial">Página inicial</option>
+  </select>
+  
+  <button id="btnLogin">Entrar</button>
+  <a id="linkShowRegister">Criar conta</a>
+</div>
+
+<!-- CADASTRO -->
+<div id="registerBox" class="card hidden">
+  <h2>Criar Conta</h2>
+  <input id="userReg" type="text" placeholder="Nome de Usuário">
+  <input id="phoneReg" type="tel" placeholder="Telefone">
+  <input id="passReg" type="password" placeholder="Senha">
+  <input id="inviteCodeReg" type="text" placeholder="Código de Convite (opcional)">
+  <button id="btnRegister">Cadastrar</button>
+  <a id="linkShowLogin">Já tenho conta</a>
+</div>
+
+<!-- FIREBASE -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+  import { getFirestore, setDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAcVPgUHbL4N9U1-H68klmGKWQF-YGleyc",
+    authDomain: "vastbitloud-2872a.firebaseapp.com",
+    projectId: "vastbitloud-2872a",
+    storageBucket: "vastbitloud-2872a.firebasestorage.app",
+    messagingSenderId: "952931184412",
+    appId: "1:952931184412:web:ee2a0e38826c30dd0cd4d9",
+    measurementId: "G-KWVQ0CFHW2"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  function showMessage(msg, ok=false){
+    const d=document.createElement('div');
+    d.textContent=msg;
+    Object.assign(d.style,{
+      position:'fixed',
+      top:'18px',
+      left:'50%',
+      transform:'translateX(-50%)',
+      padding:'10px 14px',
+      background:ok?'#4CAF50':'#ff4d4d',
+      color:'#fff',
+      borderRadius:'8px',
+      zIndex:9999
+    });
+    document.body.appendChild(d);
+    setTimeout(()=>d.remove(),2200);
+  }
+
+  const loginBox=document.getElementById('loginBox');
+  const registerBox=document.getElementById('registerBox');
+
+  document.getElementById('linkShowRegister').addEventListener('click', ()=>{
+    loginBox.classList.add('hidden');
+    registerBox.classList.remove('hidden');
+  });
+
+  document.getElementById('linkShowLogin').addEventListener('click', ()=>{
+    registerBox.classList.add('hidden');
+    loginBox.classList.remove('hidden');
+  });
+
+  const params=new URLSearchParams(window.location.search);
+  const codigoConvite=params.get('codigo');
+  if(codigoConvite) document.getElementById('inviteCodeReg').value = codigoConvite;
+
+  document.getElementById('btnRegister').addEventListener('click', async ()=>{
+    const user=document.getElementById('userReg').value.trim();
+    const phone=document.getElementById('phoneReg').value.trim();
+    const pass=document.getElementById('passReg').value.trim();
+    const invitedBy=document.getElementById('inviteCodeReg').value.trim()||null;
+
+    if(!user||!phone||!pass){
+      showMessage('Preencha todos os campos!');
+      return;
+    }
+
+    const myCode = "VAST-"+Date.now().toString(36).toUpperCase();
+
+    await setDoc(doc(db, "users", phone), {
+      user, phone, pass, myCode, invitedBy
+    });
+
+    if(invitedBy){
+      await setDoc(doc(db, "teams", invitedBy+"_"+phone), {
+        owner: invitedBy,
+        member: phone,
+        name: user
+      });
+    }
+
+    showMessage('Conta criada com sucesso!', true);
+    setTimeout(()=>{
+      registerBox.classList.add('hidden');
+      loginBox.classList.remove('hidden');
+    },1200);
+  });
+
+  document.getElementById('btnLogin').addEventListener('click', async ()=>{
+    const phone=document.getElementById('phoneLogin').value.trim();
+    const pass=document.getElementById('passLogin').value.trim();
+
+    const ref = await getDoc(doc(db, "users", phone));
+
+    if(!ref.exists()){
+      showMessage('Conta não encontrada!');
+      return;
+    }
+
+    const data = ref.data();
+
+    if(data.pass !== pass){
+      showMessage('Senha incorreta!');
+      return;
+    }
+
+    localStorage.setItem('vast_userdata', JSON.stringify(data));
+    showMessage('Login realizado!', true);
+
+    const dest = document.getElementById('destinationSelect').value;
+
+    // redirecionamento atualizado para checar o novo value "pagina_inicial"
+    setTimeout(()=>{
+      if(dest === 'pagina_inicial'){
+        window.location.href = 'https://sites.google.com/view/vastbitloud';
+      } else {
+        window.location.href = 'equipe.html';
+      }
+    },900);
+  });
+</script>
+</body>
+</html>
