@@ -1,8 +1,0 @@
-{
-  "name": "GreenFarm Demo",
-  "short_name": "GreenFarm",
-  "start_url": "index.html",
-  "display": "standalone",
-  "background_color": "#7cb342",
-  "theme_color": "#7cb342"
-}
