@@ -1,0 +1,11 @@
+/* style.css */
+body{margin:0;font-family:Arial;color:#fff;background:url('img/bg.jpg') no-repeat center center fixed;background-size:cover;display:flex;align-items:flex-start;justify-content:center;min-height:100vh;padding:24px}
+.card{background:rgba(17,23,34,0.86);padding:24px;width:100%;max-width:420px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.45);margin-bottom:12px}
+.header{background:rgba(15,23,36,0.85);padding:18px;text-align:center;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.4);width:100%;max-width:960px;margin-bottom:12px}
+.container{padding:18px;max-width:960px;width:100%}
+.input, input{width:100%;padding:12px;margin:8px 0;border-radius:6px;border:none;background:#1a2333;color:#fff}
+button{width:100%;padding:12px;border-radius:6px;border:none;background:#4da3ff;color:#000;font-weight:700;cursor:pointer;margin-top:8px}
+.hidden{display:none}
+.muted{color:#b3b3b3;font-size:13px}
+.team-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:12px}
+.member{background:rgba(10,14,20,0.6);padding:12px;border-radius:10px}
